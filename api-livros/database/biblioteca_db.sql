@@ -1,39 +1,15 @@
-from collections.abc import Generator
+CREATE DATABASE IF NOT EXISTS biblioteca_db
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+USE biblioteca_db;
 
-
-class Configuracoes(BaseSettings):
-    db_user: str
-    db_password: str
-    db_host: str = "localhost"
-    db_port: int = 3306
-    db_name: str
-
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-
-
-configuracoes = Configuracoes()
-
-DATABASE_URL = (
-    f"mysql+pymysql://{configuracoes.db_user}:{configuracoes.db_password}"
-    f"@{configuracoes.db_host}:{configuracoes.db_port}/{configuracoes.db_name}"
-)
-
-mecanismo_banco = create_engine(DATABASE_URL, pool_pre_ping=True)
-criar_sessao = sessionmaker(bind=mecanismo_banco, autoflush=False, autocommit=False)
-
-
-class BaseBanco(DeclarativeBase):
-    pass
-
-
-def obter_sessao_banco() -> Generator[Session, None, None]:
-    sessao_banco = criar_sessao()
-
-    try:
-        yield sessao_banco
-    finally:
-        sessao_banco.close()
+CREATE TABLE IF NOT EXISTS livros (
+  id INT NOT NULL AUTO_INCREMENT,
+  titulo VARCHAR(150) NOT NULL,
+  autor VARCHAR(120) NOT NULL,
+  ano_publicacao INT NOT NULL,
+  disponivel BOOLEAN NOT NULL DEFAULT TRUE,
+  PRIMARY KEY (id),
+  KEY ix_livros_id (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
